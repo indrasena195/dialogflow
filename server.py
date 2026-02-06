@@ -54,6 +54,10 @@ def chat():
     print("POST /chat reached")   # DEBUG
     data = request.get_json()
     print("Received payload:", data)
+    session_id = data.get("session_id")
+
+    if not session_id:
+     return jsonify({"error": "Missing session_id"}), 400
 
     agent_selected = data["agent"]
     text = data["message"]
@@ -84,7 +88,8 @@ def chat():
             config["project_id"],
             config["location"],
             config["agent_id"],
-            text
+            text,
+            session_id
         )
     else:
         reply = "Unknown agent type"

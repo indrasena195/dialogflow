@@ -239,6 +239,15 @@
 </div>
 
 <script>
+
+let SESSION_ID = sessionStorage.getItem("SESSION_ID");
+
+if (!SESSION_ID) {
+  SESSION_ID = crypto.randomUUID();
+  sessionStorage.setItem("SESSION_ID", SESSION_ID);
+}
+console.log("Session ID:", SESSION_ID);
+
 const FLOW_TO_MENU = {
   "Menu Flow": "MENU",
   "Chicken Flow": "CHICKEN",
@@ -429,10 +438,13 @@ async function sendMessage() {
   chatBox.scrollTop = chatBox.scrollHeight;
 
   try {
-    const res = await fetch("http://127.0.0.1:5000/chat", {
+    const res = await fetch("https://dialogflow-kfc.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ agent, message })
+      body: JSON.stringify({ 
+        agent, 
+        message, 
+        session_id: SESSION_ID })
     });
     const data = await res.json();
     console.log("FULL RESPONSE:", data);

@@ -1,14 +1,14 @@
 from google.cloud import dialogflowcx_v3beta1 as dialogflowcx
 from db_cx import save_cx_order
-import uuid   
-CURRENT_SESSION_ID = str(uuid.uuid4()) 
+# import uuid   
+# CURRENT_SESSION_ID = str(uuid.uuid4()) 
 
 CX_CLIENT = dialogflowcx.SessionsClient()
 
-def reset_session():
-    global CURRENT_SESSION_ID
-    CURRENT_SESSION_ID = str(uuid.uuid4())
-    print("CX session reset:", CURRENT_SESSION_ID)
+# def reset_session():
+#     global CURRENT_SESSION_ID
+#     CURRENT_SESSION_ID = str(uuid.uuid4())
+#     print("CX session reset:", CURRENT_SESSION_ID)
 
 def extract_cx_params(parameters):
     clean = {}
@@ -59,11 +59,11 @@ def clean_params(params):
     return clean
 
 
-def detect_intent_cx_kfc(project_id, location, agent_id, text, language_code="en-us"):
-    global CURRENT_SESSION_ID
+def detect_intent_cx_kfc(project_id, location, agent_id, text, session_id, language_code="en-us"):
+    # global CURRENT_SESSION_ID
 
     agent = f"projects/{project_id}/locations/{location}/agents/{agent_id}"
-    session_path = f"{agent}/sessions/{CURRENT_SESSION_ID}"
+    session_path = f"{agent}/sessions/{session_id}"
 
     # client = dialogflowcx.SessionsClient()
 
