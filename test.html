@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KFC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --kfc-red: #e4002b;
+      --kfc-black: #202124;
+      --kfc-white: #ffffff;
+      --bg-light: #f4f4f4;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: var(--bg-light);
+      color: var(--kfc-black);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Header Area --- */
+    header {
+      background: var(--kfc-red);
+      color: white;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+
+    header h2 { margin: 0; font-weight: 800; letter-spacing: 1px; }
+
+    #agent-select {
+      padding: 8px 15px;
+      border-radius: 20px;
+      border: none;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* --- Main Layout --- */
+    #app-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    /* --- Chat Section --- */
+    #chat-container {
+      width: 400px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #ddd;
+      box-shadow: 5px 0 15px rgba(0,0,0,0.05);
+    }
+
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background-image: radial-gradient(#eee 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .user-msg, .bot-msg {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      position: relative;
+    }
+
+    .user-msg {
+      align-self: flex-end;
+      background: var(--kfc-red);
+      color: white;
+      border-bottom-right-radius: 2px;
+    }
+
+    .bot-msg {
+      align-self: flex-start;
+      background: #eee;
+      color: var(--kfc-black);
+      border-bottom-left-radius: 2px;
+    }
+
+    /* --- Input Area --- */
+    #input-area {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #message {
+      flex: 1;
+      padding: 12px 20px;
+      border: 2px solid #eee;
+      border-radius: 25px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+      outline: none;
+    }
+
+    #message:focus { border-color: var(--kfc-red); }
+
+    #send-btn, #mic-btn {
+      background: var(--kfc-red);
+      color: white;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+    }
+
+    #send-btn:hover, #mic-btn:hover { transform: scale(1.1); }
+
+    /* --- Menu Section --- */
+    #menu-container {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+      display: none; /* Hidden until Agent 4 active */
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #menu-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      border-left: 5px solid var(--kfc-red);
+      padding-left: 15px;
+    }
+
+    #menu-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 25px;
+    }
+
+    .menu-card {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      text-align: center;
+      padding-bottom: 15px;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
+
+    .menu-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #fafafa;
+    }
+
+    .menu-card p {
+      margin: 15px 10px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--kfc-black);
+    }
+
+    #listening-status {
+      position: absolute;
+      bottom: 80px;
+      left: 20px;
+      font-weight: bold;
+      color: var(--kfc-red);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h2>KFC AGENT</h2>
+  <select id="agent-select">
+    <option value="agent4">KFC-Agent</option>
+    <option value="agent1">ES-Agent</option>
+    <option value="agent2">CX-Flow-Agent</option>
+    <option value="agent3">CX-PlayBook-Agent</option>
+  </select>
+</header>
+
+<div id="app-container">
+
+  <div id="chat-container">
+    <div id="chat-box">
+      <div class="bot-msg">Hello! Please select an agent to start our conversation.</div>
+    </div>
+
+    <!-- <p id="listening-status">🎧 Listening...</p> -->
+
+    <div id="input-area">
+      <button id="mic-btn" onclick="startVoiceInput()" title="Voice Input">🎙️</button>
+      <input type="text" id="message" placeholder="Type your message..." onkeydown="handleKeyPress(event)" />
+      <button id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <div id="menu-container">
+    <h3 id="menu-title">OUR MENU</h3>
+    <div id="menu-items"></div>
+  </div>
+
+</div>
+
+<script>
+const FLOW_TO_MENU = {
+  "Menu Flow": "MENU",
+  "Chicken Flow": "CHICKEN",
+  "Burger Flow": "BURGER",
+  "Wings Flow": "WINGS",
+  "Wraps Flow": "WRAPS",
+  "Combos Flow": "COMBOS",
+  "Beverages Flow": "BEVERAGES",
+  "Extras Flow": "EXTRAS"
+};
+
+const MENU_DATA = {
+  MENU: [
+    {name: "chicken", img:"https://images.ctfassets.net/wtodlh47qxpt/4R8RfhmqbZDSVBw3fAj99L/1d3417db42df1d9b08f4e19690e3be58/SNACKS_1-pc-Hot-_-Crispy-Chicken_Delivery.jpg?h=600&w=800&fm=webp&fit=fill"},
+    {name: "burger", img:"https://images.ctfassets.net/wtodlh47qxpt/1FwXzx6AouivZMdRd3gS2j/7fbb879c554e148e10d02620bb1d039e/Burger-Zinger_Burger_Veg-Delivery.jpg?h=600&w=800&fm=webp&fit=fill"},
+    {name: "wings", img:"https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/offers/xl/FREESTRIPS.jpg?ver=77.5"},
+    {name: "wraps", img:"https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-K973.jpg?ver=77.5"},
+    {name: "combos", img:"https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-PR00002685.jpg?ver=77.5"},
+    {name: "beverages", img:"https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-K1023.jpg?ver=77.5"},
+    {name: "extras", img:"https://images.ctfassets.net/wtodlh47qxpt/1PMeKCbu52k1pfJmw62uGv/e99d6d8984c4537538f508812ff5110f/SNACKS_Pack-of-4-Dips--20gm-each_Delivery.jpg?h=600&w=800&fm=webp&fit=fill"}
+  ],  
+  CHICKEN: [
+    { name: "Chicken Strips", img: "https://images.ctfassets.net/wtodlh47qxpt/2uJUbyTP9mbX19HzP3ivjF/f60a5b48cae7f4de3b918ea2ddac599a/D-K684.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Crispy Chicken", img: "https://images.ctfassets.net/wtodlh47qxpt/4R8RfhmqbZDSVBw3fAj99L/1d3417db42df1d9b08f4e19690e3be58/SNACKS_1-pc-Hot-_-Crispy-Chicken_Delivery.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Chicken Bucket", img: "https://images.ctfassets.net/wtodlh47qxpt/6BI6kCDI4IHFcbiQqpQxnc/343ea9a44756c18dd0632d3809bc8482/KFC-APP-PLP-4-pc-Hot-_-Crispy-Chicken-1160-X-870-16SEPT-NEW-snacks.jpg?h=600&w=800&fm=webp&fit=fill" }
+  ],
+  BURGER: [
+    { name: "Zinger Burger", img: "https://images.ctfassets.net/wtodlh47qxpt/1gRTrPUhdDUaTqhorx1RmW/38f1455dbbb519c0f84bf99851ea16c5/Burgers-American-Classic-Zinger-delivery.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Veg Zinger Burger", img: "https://images.ctfassets.net/wtodlh47qxpt/1FwXzx6AouivZMdRd3gS2j/7fbb879c554e148e10d02620bb1d039e/Burger-Zinger_Burger_Veg-Delivery.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Spicy Zinger Burger", img: "https://images.ctfassets.net/wtodlh47qxpt/4hXrsUTji88odWH6jrnMRK/9bcd3c8ca97d86ba2db2ec8f752f4b77/Burgers-Caribbean_Spicy_Zinger_Burger-delivery.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Zinger Pro Burger", img: "https://images.ctfassets.net/wtodlh47qxpt/2v3CehILmqa5edNMvkIfNC/e52b31242d699db5a9e550cbcfae398e/Burgers-Mexican-Zinger-Pro-Burger-delivery.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Paneer Zinger Burger", img: "https://images.ctfassets.net/wtodlh47qxpt/1vkwqLN4nNjTD9VmuKxZgj/f16bb55c9185df7a07b754bf3a522cb2/KFC-APP-PLP-Indian-Paneer-Zinger-1160-X-870-15SEPT-F1.jpg?h=600&w=800&fm=webp&fit=fill" },
+  ],
+  WINGS: [
+    { name: "Hot Wings", img: "https://images.ctfassets.net/wtodlh47qxpt/1UteRTDMLWUOqZn6TyZASh/3beb2afc63b757b41114b8519a084848/D-K303.jpg?h=600&w=800&fm=webp&fit=fill" },
+  ],
+  WRAPS: [
+    { name: "Classic Chicken Wrap", img: "https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-K972.jpg?ver=77.5" },
+    { name: "Korean Tangy Chicken Wrap", img: "https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-K974.jpg?ver=77.5" },
+    { name: "Thai Spicy chicken Wrap", img: "https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-K973.jpg?ver=77.5" },
+  ],
+  COMBOS: [
+    { name: "All in One Bucket", img: "https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-PR00002951.jpg?ver=77.5" },
+    { name: "Combo 1 Piece of Chicken", img: "https://static.kfcvietnam.com.vn/images/items/lg/D-CHICKEN-1.jpg?v=gk7kxg" },
+    { name: "Combo of 2 Pieces of Chicken", img: "https://static.kfcvietnam.com.vn/images/items/lg/D-CHICKEN-2.jpg?v=gk7kxg" },
+    { name: "Tender Fried Chicken Combo", img: "https://static.kfcvietnam.com.vn/images/items/lg/D-CBO-Tenders-New.jpg?v=gk7kxg" },
+    { name: "Zinger Chicken Burger and Fries Combo", img: "https://static.kfcvietnam.com.vn/images/items/lg/D-B.ZINGER-FF.jpg?v=gk7kxg" },
+    { name: "Combo Burger with Roast Chicken Fillet and Fries", img: "https://static.kfcvietnam.com.vn/images/items/lg/DB-ROASTED-FF.jpg?v=gk7kxg" },
+    { name: "Combo Burger: Roast Chicken Fillet and Fried Chicken", img: "https://static.kfcvietnam.com.vn/images/items/lg/DB-ROASTED-CBO.jpg?v=gk7kxg" },
+    { name: "Zinger Chicken Burger and Fried Chicken Combo", img: "https://static.kfcvietnam.com.vn/images/items/lg/D-B.ZINGER-COB.jpg?v=gk7kxg" },
+    { name: "Burger and Fried Chicken Combo", img: "https://static.kfcvietnam.com.vn/images/items/lg/D-BURGER-COB-FF.jpg?v=gk7kxg" }
+  ],
+  EXTRAS: [
+    { name: "Chicken Popcorn", img: "https://images.ctfassets.net/wtodlh47qxpt/3K6v7pmRtMb1W8Y1bANdsd/f5181d12763275171f9589c4c759c356/KFC-APP-PLP-regular-popcorn-380-X-285-16SEPT-NEW-snacks.jpg?h=600&w=800&fm=webp&fit=fill"},
+    { name: "Fries", img: "https://images.ctfassets.net/wtodlh47qxpt/15crtUN7MLoXab6LomRGYp/f40da828bef44a10755b63a5a972990a/KFC-APP-PLP-Medium-Fries-380-X-285-16SEPT-NEW-snacks.jpg?h=600&w=800&fm=webp&fit=fill"},
+    { name: "Tandoori Masala Dip -20gm", img: "https://images.ctfassets.net/wtodlh47qxpt/4y50mmaxJlReNYwEjYgzp0/f6005d7042b73a7a94446c6a561e2f9e/Tandoori-Masala-Dip--20gm.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Nashville Hot Pepper Dip-20gm", img: "https://images.ctfassets.net/wtodlh47qxpt/563e681WXRneE14mjTBVpC/a229a437608a85fa8ebf7e9fe4e35cb1/Nashville-Hot-Pepper-Dip-20gm.jpg?h=600&w=800&fm=webp&fit=fillv" }
+  ],
+  BEVERAGES: [
+    { name: "Pepsi", img: "https://images.ctfassets.net/wtodlh47qxpt/3SQYV7AHGvRRN42xRlIqMU/2f07127e1dae5cdfb544435246db5bdd/DESSERT_Masala-Pepsi-Reusable-Bottle_Delivery.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "7UP", img: "https://images.ctfassets.net/wtodlh47qxpt/4ghOoKdD3HgMTcUhrfbWmv/d9526a452982e067ec8594a27dc02293/7Up_1160x870px.jpg?h=600&w=800&fm=webp&fit=fill" },
+    { name: "Virgin Mojito", img: "https://images.ctfassets.net/wtodlh47qxpt/2NqvVEISqTeiOCf34RsUaa/11363f442b1f2dc0e060674ad8d1fd06/D-K935.jpg?h=600&w=800&fm=webp&fit=fill"},
+    { name: "Mirinda", img: "https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-K1022.jpg?ver=77.5" },
+    { name: "Mountain Dew", img: "https://orderserv-kfc-assets.yum.com/15895bb59f7b4bb588ee933f8cd5344a/images/items/xl/D-K1025.jpg?ver=77.5" }
+  ]
+};
+
+function handleKeyPress(event) {
+  if (event.key === "Enter") {
+    sendMessage();
+  }
+}
+
+function renderMenu(menuKey) {
+  const menuContainer = document.getElementById("menu-container");
+  const menuItems = document.getElementById("menu-items");
+  const title = document.getElementById("menu-title");
+
+  menuItems.innerHTML = "";
+  if (!MENU_DATA[menuKey]) {
+    title.innerText = "MENU";
+    return;
+  }
+
+  title.innerText = menuKey + " SELECTION";
+
+  MENU_DATA[menuKey].forEach(item => {
+    const card = document.createElement("div");
+    card.className = "menu-card";
+    card.innerHTML = `
+      <img src="${item.img}">
+      <p>${item.name}</p>
+    `;
+    menuItems.appendChild(card);
+  });
+}
+
+function renderCartFromParams(params) {
+  const menuContainer = document.getElementById("menu-container");
+  const menuItems = document.getElementById("menu-items");
+  const title = document.getElementById("menu-title");
+
+  menuItems.innerHTML = "";
+  title.innerText = "🛒 CART";
+
+  if (!params) return;
+
+  Object.keys(params).forEach(key => {
+    if (key.endsWith("_item") && params[key]) {
+      const itemName = params[key];
+
+      // find image from MENU_DATA
+      let imageUrl = "";
+
+      Object.values(MENU_DATA).forEach(category => {
+        category.forEach(item => {
+          if (item.name.toLowerCase() === itemName.toLowerCase()) {
+            imageUrl = item.img;
+          }
+        });
+      });
+
+      const card = document.createElement("div");
+      card.className = "menu-card";
+      card.innerHTML = `
+        <img src="${imageUrl || ''}">
+        <p>${itemName}</p>
+      `;
+      menuItems.appendChild(card);
+    }
+  });
+}
+
+
+function startVoiceInput() {
+  if (!('webkitSpeechRecognition' in window)) {
+    alert("Speech Recognition not supported.");
+    return;
+  }
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.onstart = () => document.getElementById("listening-status").style.display = "block";
+  recognition.onend = () => document.getElementById("listening-status").style.display = "none";
+  recognition.onresult = (event) => {
+    document.getElementById("message").value = event.results[0][0].transcript;
+    sendMessage();
+  };
+  recognition.start();
+}
+
+let currentUtterance = null;
+
+function speak(text) {
+  if (!text || !("speechSynthesis" in window)) return;
+
+  // Stop any previous speech
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+//   utterance.lang = "en-US";
+//   utterance.rate = 1;     // speed (0.8–1.2 is safe)
+  utterance.pitch = 1;   // voice pitch
+  utterance.volume = 1;  // volume (0–1)
+
+  // Optional: choose a nicer voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    v.lang === "en-US" && v.name.toLowerCase().includes("female")
+  );
+  if (preferred) utterance.voice = preferred;
+
+  currentUtterance = utterance;
+  window.speechSynthesis.speak(utterance);
+}
+
+async function sendMessage() {
+  const messageInput = document.getElementById("message");
+  const message = messageInput.value;
+  const agent = document.getElementById("agent-select").value;
+  const chatBox = document.getElementById("chat-box");
+  const menuContainer = document.getElementById("menu-container");
+
+  if (!message.trim()) return;
+
+  chatBox.innerHTML += `<div class="user-msg">${message}</div>`;
+  messageInput.value = "";
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agent, message })
+    });
+    const data = await res.json();
+    console.log("FULL RESPONSE:", data);
+    const param = [data.response.params];
+    console.log(param);
+    
+    
+
+    chatBox.innerHTML += `<div class="bot-msg">${data.response.reply}</div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+    speak(data.response.reply);
+
+    if (agent === "agent4") {
+        menuContainer.style.display = "block";
+
+        if (data.response.flow === "Cart&Review Flow") {
+            renderCartFromParams(data.response.params);
+        } else {
+            const menuKey = FLOW_TO_MENU[data.response.flow];
+            if (menuKey) renderMenu(menuKey);
+        }
+        } else {
+        menuContainer.style.display = "none";
+    }
+
+  } catch (err) {
+    chatBox.innerHTML += `<div class="bot-msg" style="color:red">Error connecting to server.</div>`;
+  }
+}
+</script>
+
+</body>
+</html>
