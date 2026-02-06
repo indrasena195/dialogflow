@@ -104,12 +104,11 @@ def detect_intent_cx_kfc(project_id, location, agent_id, text, session_id, langu
 
     print("CX Flow:", flow)
     print("CX Page:", page)
-    print("CX Session:", CURRENT_SESSION_ID)
+    print("CX Session:", session_id)
 
     if flow == "Default Start Flow":
         save_cx_order(order)
         print("KFC order saved")
-        reset_session()
 
     return {
         "reply": reply_text,
